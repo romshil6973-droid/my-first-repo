@@ -19,7 +19,7 @@ def test_auth_required(client):
 def test_auth_success(auth_client):
     resp = auth_client.get("/dashboard")
     assert resp.status_code == 200
-    assert "Система Порядка" in resp.text
+    assert "Мониторинг рабочего дня" in resp.text
 
 
 def test_dashboard_shows_all_employees(auth_client):

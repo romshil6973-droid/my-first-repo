@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import shutil
@@ -13,6 +14,9 @@ import config
 import database
 from cleanup import cleanup_old_files
 from parser import extract_date_from_filename, parse_excel
+
+logger = logging.getLogger("workday")
+logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="Система Порядка")
 app.add_middleware(SessionMiddleware, secret_key=config.SESSION_SECRET)
@@ -67,12 +71,13 @@ async def upload_report(
     with open(save_path, "wb") as f:
         shutil.copyfileobj(file.file, f)
 
+    database.upsert_employee(login, report_date)
+
     try:
         metrics = parse_excel(str(save_path))
         database.upsert_metrics(login, report_date, metrics)
-        database.upsert_employee(login, report_date)
     except Exception:
-        pass
+        logger.exception("Failed to parse %s/%s", login, report_date)
 
     return {"status": "ok", "login": login, "date": report_date}
 

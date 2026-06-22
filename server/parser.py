@@ -63,12 +63,9 @@ def parse_excel(filepath: str | Path) -> dict:
     }
 
     sheets = wb.sheetnames
-    if len(sheets) < 2:
-        wb.close()
-        return metrics
 
-    sheet2 = wb[sheets[1]]
-    rows = list(sheet2.iter_rows(min_row=2, values_only=True))
+    activity_sheet = wb[sheets[1]] if len(sheets) >= 2 else wb[sheets[0]]
+    rows = list(activity_sheet.iter_rows(min_row=2, values_only=True))
 
     for row in rows:
         if len(row) < 5:
@@ -103,17 +100,22 @@ def parse_excel(filepath: str | Path) -> dict:
         if any(op_lower.startswith(p) for p in BROWSER_PREFIXES):
             metrics["browser_time"] += duration_sec
 
-    sheet1 = wb[sheets[0]]
+    if len(sheets) >= 2:
+        summary_sheet = wb[sheets[0]]
+    else:
+        summary_sheet = None
+
     achievements_parts = []
-    for row in sheet1.iter_rows(min_row=5, values_only=True):
-        if len(row) >= 4:
-            val = row[3]
-        elif len(row) >= 2:
-            val = row[1]
-        else:
-            continue
-        if val and str(val).strip():
-            achievements_parts.append(str(val).strip())
+    if summary_sheet:
+        for row in summary_sheet.iter_rows(min_row=5, values_only=True):
+            if len(row) >= 4:
+                val = row[3]
+            elif len(row) >= 2:
+                val = row[1]
+            else:
+                continue
+            if val and str(val).strip():
+                achievements_parts.append(str(val).strip())
 
     if achievements_parts:
         metrics["achievements"] = "; ".join(achievements_parts)
