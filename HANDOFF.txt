@@ -1,0 +1,228 @@
+═══════════════════════════════════════════════════════════════════
+  СООБЩЕНИЕ СЕБЕ — КОНТЕКСТ ПРОЕКТА "СИСТЕМА ПОРЯДКА"
+  Дата: 17 июня 2026
+  Автор: Claude (для передачи контекста между сессиями)
+═══════════════════════════════════════════════════════════════════
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. КТО ЗАКАЗЧИК
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Roman — CEO/CFO компании. Строит "Систему Порядка" —
+систему мониторинга рабочего времени сотрудников.
+
+GitHub аккаунт: romshil6973-droid
+Email: romshil69.73@gmail.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. РЕПОЗИТОРИИ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Документация / ТЗ:
+  https://github.com/romshil6973-droid/my-first-repo
+  Ветка: main
+  Папка: docs/
+
+• Код WorkdayMonitor (основной):
+  https://github.com/romshil6973-droid/-
+  Ветка: main
+  (репозиторий называется буквально "-")
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. СЕРВЕР
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+VPS Timeweb, FastAPI + nginx (HTTPS с самоподписным сертификатом)
+IP: 46.149.68.148
+URL: https://46.149.68.148
+API-токен: SP2026secure
+Заголовок: X-API-Token: SP2026secure
+
+Эндпоинты:
+  POST /upload/{login}   — загрузить Excel-отчёт
+  GET  /health           — проверить доступность
+  GET  /files?date=...   — список файлов за дату (для материнского прилож.)
+  GET  /download/{login}/{filename} — скачать файл
+
+ВАЖНО: verify=False в requests (самоподписной SSL).
+        Используем urllib3.disable_warnings() чтобы убрать предупреждения.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. ПРОЕКТ: WorkdayMonitor v2.0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Путь на ПК пользователя:
+C:\Users\User\Downloads\06_Разработка ПО и Вайб-кодинг\06_14_Мониторинг\Мониторинг активности
+
+Что это: Python/customtkinter приложение для Windows.
+Мониторит активность сотрудника, генерирует Excel-отчёт,
+отправляет на сервер по HTTPS.
+
+ЧТО БЫЛО СДЕЛАНО В v2.0 (всё уже в GitHub romshil6973-droid/-):
+
+  core/config.py        — ОБНОВЛЁН
+    • Убран Google Drive path
+    • Добавлены SERVER_URL = "https://46.149.68.148"
+    • Добавлены API_TOKEN = "SP2026secure"
+    • Добавлена get_pending_dir() → %LOCALAPPDATA%\WorkdayMonitor\pending\
+    • save_config(login) теперь принимает 1 аргумент (не 2)
+    • validate_gdrive_path() УДАЛЕНА
+
+  core/uploader.py      — НОВЫЙ ФАЙЛ
+    • upload_report(filepath, login) → bool
+    • retry_pending_uploads() → int (повторная отправка из pending)
+    • check_server() → bool
+    • pending_count() → int
+    • _save_to_pending(filepath) — сохранить в pending при ошибке
+    • Использует requests + urllib3 + verify=False
+
+  ui/manual_tab.py      — НОВЫЙ ФАЙЛ
+    • Вкладка "Инструкция" с текстом для сотрудников
+    • Только чтение (CTkTextbox state="disabled")
+
+  ui/setup_dialog.py    — ОБНОВЛЁН
+    • Убрано поле Google Drive path
+    • Только поле логина
+    • Размер окна: 540x320 (было 540x460)
+    • save_config(login) — 1 аргумент
+
+  ui/settings_tab.py    — ОБНОВЛЁН
+    • Убрана строка Google Drive
+    • Добавлена карточка "Сервер отчётов" со статусом
+    • Кнопка "Проверить соединение" (вызывает check_server())
+    • Кнопка "Повторить отправку (N)" (вызывает retry_pending_uploads())
+
+  ui/app_window.py      — ОБНОВЛЁН
+    • Добавлен импорт ManualTab
+    • В sidebar добавлена кнопка ("manual", "📖", "Инструкция")
+    • В _tabs добавлен "manual": ManualTab(content)
+    • _generate_for_dates() теперь использует upload_report() вместо Google Drive
+    • _check_pending_reports() вызывает retry_pending_uploads() через after(3000)
+
+  requirements.txt      — ОБНОВЛЁН
+    Добавлено: requests>=2.31.0, urllib3>=2.0.0, pytest-cov>=4.0.0
+
+  tests/test_config.py  — НОВЫЙ ФАЙЛ (22 теста)
+    TestValidateLogin: 11 тестов
+    TestConfigIO: 5 тестов
+    test_pending_dir_created: 1 тест
+
+  tests/test_uploader.py — НОВЫЙ ФАЙЛ (14 тестов)
+    TestCheckServer: 4 теста
+    TestUploadReport: 5 тестов
+    TestRetryPendingUploads: 4 теста
+    test_pending_count: 1 тест
+
+  tests/test_reporter.py — ИСПРАВЛЕН
+    Убраны тесты validate_gdrive_path (функция удалена)
+    save_config() исправлен на 1 аргумент
+
+  tests/test_browser_history.py — ИСПРАВЛЕН
+    test_chrome_ts_zero_is_epoch помечен @pytest.mark.skipif для win32
+
+РЕЗУЛЬТАТ ТЕСТОВ (на ПК пользователя):
+  119 passed, 1 skipped ✅
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. ДОКУМЕНТЫ В my-first-repo/docs/
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+docs/TZ_WorkdayMonitor_v2.0.md
+  — ТЗ на WorkdayMonitor v2.0 (интеграция с сервером, установщик,
+    вкладка Инструкция, обработка ошибок, тесты ≥80%)
+  https://github.com/romshil6973-droid/my-first-repo/blob/main/docs/TZ_WorkdayMonitor_v2.0.md
+
+docs/TZ_Materinskoe_Prilozhenie_v2.1.md
+  — ТЗ на Материнское приложение v2.1 (агрегирование отчётов
+    через сервер вместо Google Drive, модуль ServerClient)
+  https://github.com/romshil6973-droid/my-first-repo/blob/main/docs/TZ_Materinskoe_Prilozhenie_v2.1.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. ТЕХНИЧЕСКИЕ ОСОБЕННОСТИ СРЕДЫ ПОЛЬЗОВАТЕЛЯ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Windows 10/11, Python 3.14.4 в PATH
+• VS Code установлен, используется как IDE + терминал
+• Git НЕ установлен в системный PATH
+• GitHub Desktop установлен (bundled git):
+  C:\Users\User\AppData\Local\GitHubDesktop\app-3.5.12\resources\app\git\cmd\git.exe
+• Для git-команд используем этот путь через Python subprocess
+• Репозиторий romshil6973-droid/- уже добавлен в GitHub Desktop
+• Пользователь умеет: открыть терминал VS Code, вставить Python-скрипт,
+  запустить его, прочитать вывод
+
+ВАЖНО: Когда нужно доставить файлы пользователю — пишем Python-скрипт
+(update_vX.py), пользователь создаёт файл в VS Code и запускает его.
+Скрипт пишет файлы на диск через open(path, 'w', encoding='utf-8').
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. ЧТО ОСТАЛОСЬ СДЕЛАТЬ
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+По ТЗ WorkdayMonitor v2.0:
+
+  [ ] ЭТАП 7: Установщик Plug & Play
+      • PyInstaller — упаковать в WorkdayMonitor.exe
+        Команда: pyinstaller --onefile --windowed --icon=assets/icon.ico main.py
+      • Inno Setup — создать WorkdayMonitor_Setup.exe
+        Скрипт installer.iss уже описан в ТЗ
+      • Результат: один .exe который сотрудник запускает и вводит логин
+
+  [ ] ЭТАП 8: Финальное тестирование
+      • Проверить что .exe запускается на чистой Windows (без Python)
+      • Проверить отправку отчёта на реальный сервер 46.149.68.148
+      • Проверить pending-логику (отключить сеть, сформировать отчёт,
+        включить сеть, убедиться что отправилось автоматически)
+
+По проекту в целом:
+
+  [ ] Материнское приложение v2.1
+      — отдельный проект на ПК Романа
+      — читает отчёты С СЕРВЕРА (не из Google Drive)
+      — модуль ServerClient (код в ТЗ)
+      — пока не начато
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. СТРУКТУРА ПАПОК ПРОЕКТА (WorkdayMonitor)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Мониторинг активности/
+├── main.py
+├── requirements.txt
+├── core/
+│   ├── config.py      ← обновлён v2.0
+│   ├── uploader.py    ← новый v2.0
+│   ├── database.py
+│   ├── tracker.py
+│   ├── monitor.py
+│   └── reporter.py
+├── ui/
+│   ├── app_window.py  ← обновлён v2.0
+│   ├── manual_tab.py  ← новый v2.0
+│   ├── setup_dialog.py ← обновлён v2.0
+│   ├── settings_tab.py ← обновлён v2.0
+│   ├── workday_tab.py
+│   ├── achievements_tab.py
+│   └── theme.py
+├── tests/
+│   ├── test_config.py       ← новый v2.0
+│   ├── test_uploader.py     ← новый v2.0
+│   ├── test_reporter.py     ← исправлен
+│   ├── test_browser_history.py ← исправлен
+│   ├── test_tracker.py
+│   └── test_database.py
+└── assets/
+    └── icon.ico
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. СЛЕДУЮЩИЙ ШАГ (с чего начать)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Если читаешь это — значит нужно продолжить с ЭТАПА 7.
+
+Начни с вопроса пользователю: установлен ли PyInstaller?
+  python -m pip install pyinstaller
+
+Затем сборка:
+  cd "C:\Users\User\Downloads\06_Разработка ПО и Вайб-кодинг\06_14_Мониторинг\Мониторинг активности"
+  pyinstaller --onefile --windowed --name WorkdayMonitor --icon=assets\icon.ico main.py
+
+Затем — скачать Inno Setup 6 с официального сайта:
+  https://jrsoftware.org/isdl.php
+  Файл installer.iss уже описан в docs/TZ_WorkdayMonitor_v2.0.md
+
+═══════════════════════════════════════════════════════════════════
+  КОНЕЦ ДОКУМЕНТА
+  Если что-то непонятно — прочитай ТЗ в репозитории docs/
+═══════════════════════════════════════════════════════════════════
