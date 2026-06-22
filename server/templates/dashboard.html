@@ -3,67 +3,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Дашборд — Система Порядка</title>
-    {% if is_export %}
+    <title>Мониторинг рабочего дня</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;padding:20px}
-        .container{max-width:1200px;margin:0 auto}
-        h4{margin-bottom:16px}
-        table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-        th{background:#0d6efd;color:#fff;padding:10px 12px;text-align:left;font-size:14px}
-        td{padding:8px 12px;border-bottom:1px solid #e9ecef;font-size:14px}
-        .no-data td{color:#999;background:#f8f9fa}
-        .footer{margin-top:12px;font-size:13px;color:#666}
-    </style>
-    {% else %}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { background: #f0f2f5; }
-        .no-data td { color: #999; background: #f8f9fa; }
-        .table th { white-space: nowrap; font-size: 14px; }
-        .table td { font-size: 14px; white-space: nowrap; }
-        .achievements-col { white-space: normal !important; max-width: 200px; }
-        .btn-icon { padding: 2px 6px; font-size: 16px; line-height: 1; }
-        .nav-date { font-size: 18px; font-weight: 600; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0B1321;
+            color: #C7CCD3;
+            min-height: 100vh;
+        }
+        .header {
+            background: #111827;
+            border-bottom: 1px solid rgba(53,92,138,0.3);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #355C8A, #D4AF7A);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 18px;
+            color: #fff;
+        }
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+        .header-title span {
+            font-size: 12px;
+            color: #6B7280;
+            font-weight: 400;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-family: 'Manrope', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-ghost {
+            background: transparent;
+            color: #9CA3AF;
+            border: 1px solid rgba(55,65,81,0.5);
+        }
+        .btn-ghost:hover { background: rgba(55,65,81,0.3); color: #fff; }
+        .nav-bar {
+            background: #111827;
+            border-bottom: 1px solid rgba(53,92,138,0.2);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-date {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .nav-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(55,65,81,0.3);
+            border: 1px solid rgba(55,65,81,0.5);
+            color: #9CA3AF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        .nav-arrow:hover { background: rgba(55,65,81,0.5); color: #fff; }
+        .date-display {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: -0.3px;
+        }
+        .stats {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+        }
+        .stat-item { color: #6B7280; }
+        .stat-item strong { color: #C7CCD3; font-weight: 600; }
+        .container { padding: 20px 24px; }
+        .table-wrap {
+            background: #111827;
+            border-radius: 12px;
+            border: 1px solid rgba(53,92,138,0.2);
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: rgba(53,92,138,0.15);
+            color: #9CA3AF;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 14px;
+            text-align: left;
+            white-space: nowrap;
+            border-bottom: 1px solid rgba(53,92,138,0.2);
+        }
+        tbody td {
+            padding: 11px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(55,65,81,0.3);
+            white-space: nowrap;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: rgba(53,92,138,0.08); }
+        .employee-name { font-weight: 600; color: #fff; }
+        .no-data td { color: #4B5563; }
+        .no-data .employee-name { color: #6B7280; }
+        .achievements-col {
+            white-space: normal !important;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        .badge-gold {
+            background: rgba(212,175,122,0.15);
+            color: #D4AF7A;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .btn-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .btn-dl { background: rgba(53,92,138,0.2); color: #355C8A; }
+        .btn-dl:hover { background: rgba(53,92,138,0.4); }
+        .btn-ar { background: rgba(212,175,122,0.15); color: #D4AF7A; margin-left: 4px; }
+        .btn-ar:hover { background: rgba(212,175,122,0.3); }
+        .archived-badge { font-size: 12px; color: #4B5563; margin-left: 4px; }
+        .text-muted { color: #4B5563; font-size: 12px; }
+        .footer {
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #4B5563;
+        }
+        .empty-state { text-align: center; padding: 48px 20px; color: #4B5563; }
+        .empty-state-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
         @media (max-width: 768px) {
-            .table th, .table td { font-size: 13px; padding: 6px 8px; }
-            .achievements-col { max-width: 120px; }
+            .header { padding: 12px 16px; }
+            .nav-bar { padding: 10px 16px; flex-direction: column; gap: 8px; }
+            .container { padding: 12px 12px; }
+            thead th, tbody td { font-size: 12px; padding: 8px 8px; }
+            .achievements-col { max-width: 100px; }
+            .stats { gap: 12px; }
+            .date-display { font-size: 16px; }
         }
     </style>
-    {% endif %}
 </head>
 <body>
-<div class="container py-3">
-    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-        <h4 class="mb-0">Система Порядка</h4>
-        {% if not is_export %}
-        <div class="d-flex align-items-center gap-2">
-            <a href="/dashboard?date={{ prev_date }}" class="btn btn-outline-secondary btn-sm">&larr;</a>
-            <span class="nav-date">{{ date_display }}</span>
-            <a href="/dashboard?date={{ next_date }}" class="btn btn-outline-secondary btn-sm">&rarr;</a>
-        </div>
-        <div>
-            <a href="/dashboard/export?date={{ date }}" class="btn btn-outline-primary btn-sm">Сохранить дашборд</a>
-            <a href="/logout" class="btn btn-outline-secondary btn-sm ms-1">Выход</a>
-        </div>
-        {% else %}
-        <span class="nav-date">{{ date_display }}</span>
-        {% endif %}
-    </div>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover mb-2">
+<div class="header">
+    <div class="header-left">
+        <div class="logo-icon">М</div>
+        <div class="header-title">
+            <h1>Мониторинг рабочего дня</h1>
+            <span>Дашборд директора</span>
+        </div>
+    </div>
+    {% if not is_export %}
+    <div class="header-right">
+        <a href="/dashboard/export?date={{ date }}" class="btn btn-ghost">Экспорт</a>
+        <a href="/logout" class="btn btn-ghost">Выход</a>
+    </div>
+    {% endif %}
+</div>
+
+{% if not is_export %}
+<div class="nav-bar">
+    <div class="nav-date">
+        <a href="/dashboard?date={{ prev_date }}" class="nav-arrow">&larr;</a>
+        <span class="date-display">{{ date_display }}</span>
+        <a href="/dashboard?date={{ next_date }}" class="nav-arrow">&rarr;</a>
+    </div>
+    <div class="stats">
+        <span class="stat-item">Сотрудников: <strong>{{ total_employees }}</strong></span>
+        <span class="stat-item">Отчётов: <strong>{{ reports_count }}</strong> из {{ total_employees }}</span>
+    </div>
+</div>
+{% else %}
+<div class="nav-bar">
+    <div class="nav-date">
+        <span class="date-display">{{ date_display }}</span>
+    </div>
+    <div class="stats">
+        <span class="stat-item">Сотрудников: <strong>{{ total_employees }}</strong></span>
+        <span class="stat-item">Отчётов: <strong>{{ reports_count }}</strong> из {{ total_employees }}</span>
+    </div>
+</div>
+{% endif %}
+
+<div class="container">
+    <div class="table-wrap">
+        <table>
             <thead>
                 <tr>
                     <th>Сотрудник</th>
-                    <th>Нач.</th>
-                    <th>Кон.</th>
-                    <th>Дл.</th>
-                    <th>Актив.ПК</th>
-                    <th>Битр.</th>
+                    <th>Начало</th>
+                    <th>Конец</th>
+                    <th>Длит.</th>
+                    <th>Актив. ПК</th>
+                    <th>Битрикс</th>
                     <th>1С</th>
-                    <th>Бр.</th>
+                    <th>Браузер</th>
                     <th class="achievements-col">Достижения</th>
                     {% if not is_export %}
                     <th>Отчёт</th>
@@ -73,7 +265,7 @@
             <tbody>
                 {% for row in rows %}
                 <tr class="{% if not row.has_data %}no-data{% endif %}">
-                    <td><strong>{{ row.login }}</strong></td>
+                    <td><span class="employee-name">{{ row.login }}</span></td>
                     <td>{{ row.work_start }}</td>
                     <td>{{ row.work_end }}</td>
                     <td>{{ row.duration }}</td>
@@ -81,37 +273,50 @@
                     <td>{{ row.bitrix_time }}</td>
                     <td>{{ row.onec_time }}</td>
                     <td>{{ row.browser_time }}</td>
-                    <td class="achievements-col">{{ row.achievements }}</td>
+                    <td class="achievements-col">
+                        {% if row.has_data and row.achievements != '—' %}
+                        <span class="badge-gold">{{ row.achievements }}</span>
+                        {% else %}
+                        {{ row.achievements }}
+                        {% endif %}
+                    </td>
                     {% if not is_export %}
                     <td>
                         {% if row.has_data and row.file_exists %}
-                            <a href="/download/{{ row.login }}/{{ date }}" class="btn btn-outline-success btn-icon" title="Скачать">📥</a>
+                            <a href="/download/{{ row.login }}/{{ date }}" class="btn-icon btn-dl" title="Скачать">↓</a>
                             {% if row.is_archived %}
-                                <span class="btn-icon" title="Заархивирован">📌✅</span>
+                                <span class="archived-badge" title="Заархивирован">✓</span>
                             {% else %}
-                                <button class="btn btn-outline-warning btn-icon btn-archive"
+                                <button class="btn-icon btn-ar btn-archive"
                                         data-login="{{ row.login }}" data-date="{{ date }}"
-                                        title="Архивировать">📌</button>
+                                        title="Архивировать">⚑</button>
                             {% endif %}
                         {% elif row.has_data %}
-                            <span class="text-muted" title="Файл удалён">Нет файла</span>
+                            <span class="text-muted">Нет файла</span>
                         {% else %}
-                            <span class="text-muted">Нет дан.</span>
+                            <span class="text-muted">—</span>
                         {% endif %}
                     </td>
                     {% endif %}
                 </tr>
                 {% else %}
-                <tr><td colspan="10" class="text-center text-muted py-4">Нет данных о сотрудниках</td></tr>
+                <tr>
+                    <td colspan="10">
+                        <div class="empty-state">
+                            <div class="empty-state-icon">◎</div>
+                            <div>Нет данных о сотрудниках</div>
+                        </div>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+</div>
 
-    <div class="footer d-flex justify-content-between text-muted small">
-        <span>Обновлено: {{ updated_at }}</span>
-        <span>Сотрудников: {{ total_employees }} · Отчётов: {{ reports_count }} из {{ total_employees }}</span>
-    </div>
+<div class="footer">
+    <span>Обновлено: {{ updated_at }}</span>
+    <span>© Мониторинг рабочего дня</span>
 </div>
 
 {% if not is_export %}
@@ -122,7 +327,7 @@ document.querySelectorAll('.btn-archive').forEach(btn => {
         const date = this.dataset.date;
         const resp = await fetch(`/archive/${login}/${date}`, {method: 'POST'});
         if (resp.ok) {
-            this.outerHTML = '<span class="btn-icon" title="Заархивирован">📌✅</span>';
+            this.outerHTML = '<span class="archived-badge" title="Заархивирован">✓</span>';
         }
     });
 });
