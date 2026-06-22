@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд — Система Порядка</title>
+    {% if is_export %}
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f0f2f5;padding:20px}
+        .container{max-width:1200px;margin:0 auto}
+        h4{margin-bottom:16px}
+        table{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+        th{background:#0d6efd;color:#fff;padding:10px 12px;text-align:left;font-size:14px}
+        td{padding:8px 12px;border-bottom:1px solid #e9ecef;font-size:14px}
+        .no-data td{color:#999;background:#f8f9fa}
+        .footer{margin-top:12px;font-size:13px;color:#666}
+    </style>
+    {% else %}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; }
+        .no-data td { color: #999; background: #f8f9fa; }
+        .table th { white-space: nowrap; font-size: 14px; }
+        .table td { font-size: 14px; white-space: nowrap; }
+        .achievements-col { white-space: normal !important; max-width: 200px; }
+        .btn-icon { padding: 2px 6px; font-size: 16px; line-height: 1; }
+        .nav-date { font-size: 18px; font-weight: 600; }
+        @media (max-width: 768px) {
+            .table th, .table td { font-size: 13px; padding: 6px 8px; }
+            .achievements-col { max-width: 120px; }
+        }
+    </style>
+    {% endif %}
+</head>
+<body>
+<div class="container py-3">
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <h4 class="mb-0">Система Порядка</h4>
+        {% if not is_export %}
+        <div class="d-flex align-items-center gap-2">
+            <a href="/dashboard?date={{ prev_date }}" class="btn btn-outline-secondary btn-sm">&larr;</a>
+            <span class="nav-date">{{ date_display }}</span>
+            <a href="/dashboard?date={{ next_date }}" class="btn btn-outline-secondary btn-sm">&rarr;</a>
+        </div>
+        <div>
+            <a href="/dashboard/export?date={{ date }}" class="btn btn-outline-primary btn-sm">Сохранить дашборд</a>
+            <a href="/logout" class="btn btn-outline-secondary btn-sm ms-1">Выход</a>
+        </div>
+        {% else %}
+        <span class="nav-date">{{ date_display }}</span>
+        {% endif %}
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover mb-2">
+            <thead>
+                <tr>
+                    <th>Сотрудник</th>
+                    <th>Нач.</th>
+                    <th>Кон.</th>
+                    <th>Дл.</th>
+                    <th>Актив.ПК</th>
+                    <th>Битр.</th>
+                    <th>1С</th>
+                    <th>Бр.</th>
+                    <th class="achievements-col">Достижения</th>
+                    {% if not is_export %}
+                    <th>Отчёт</th>
+                    {% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr class="{% if not row.has_data %}no-data{% endif %}">
+                    <td><strong>{{ row.login }}</strong></td>
+                    <td>{{ row.work_start }}</td>
+                    <td>{{ row.work_end }}</td>
+                    <td>{{ row.duration }}</td>
+                    <td>{{ row.active_time }}</td>
+                    <td>{{ row.bitrix_time }}</td>
+                    <td>{{ row.onec_time }}</td>
+                    <td>{{ row.browser_time }}</td>
+                    <td class="achievements-col">{{ row.achievements }}</td>
+                    {% if not is_export %}
+                    <td>
+                        {% if row.has_data and row.file_exists %}
+                            <a href="/download/{{ row.login }}/{{ date }}" class="btn btn-outline-success btn-icon" title="Скачать">📥</a>
+                            {% if row.is_archived %}
+                                <span class="btn-icon" title="Заархивирован">📌✅</span>
+                            {% else %}
+                                <button class="btn btn-outline-warning btn-icon btn-archive"
+                                        data-login="{{ row.login }}" data-date="{{ date }}"
+                                        title="Архивировать">📌</button>
+                            {% endif %}
+                        {% elif row.has_data %}
+                            <span class="text-muted" title="Файл удалён">Нет файла</span>
+                        {% else %}
+                            <span class="text-muted">Нет дан.</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="10" class="text-center text-muted py-4">Нет данных о сотрудниках</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer d-flex justify-content-between text-muted small">
+        <span>Обновлено: {{ updated_at }}</span>
+        <span>Сотрудников: {{ total_employees }} · Отчётов: {{ reports_count }} из {{ total_employees }}</span>
+    </div>
+</div>
+
+{% if not is_export %}
+<script>
+document.querySelectorAll('.btn-archive').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const login = this.dataset.login;
+        const date = this.dataset.date;
+        const resp = await fetch(`/archive/${login}/${date}`, {method: 'POST'});
+        if (resp.ok) {
+            this.outerHTML = '<span class="btn-icon" title="Заархивирован">📌✅</span>';
+        }
+    });
+});
+</script>
+{% endif %}
+</body>
+</html>
